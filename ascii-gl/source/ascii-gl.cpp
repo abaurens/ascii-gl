@@ -1,4 +1,4 @@
-#include "__Project_Name__.hpp"
+#include "ascii-gl.hpp"
 
 #include <iostream>
 

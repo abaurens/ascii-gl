@@ -1,10 +1,10 @@
--- __Workspace_Name__ (workspace)
+-- Ascii-GL (workspace)
 
 require "premake/workspace-files"
 
-workspace "__Workspace_Name__"
+workspace "Ascii-GL"
   architecture("x86_64")
-  startproject("__Project_Name__")
+  startproject("ascii-gl")
 
   configurations {
     "Release",
@@ -50,4 +50,4 @@ group "Dependencies"
   -- include("libs/dependency_source_code")
 
 group ""
-  include("__Project_Name__")
+  include("ascii-gl")
