@@ -4,7 +4,7 @@ require "premake/workspace-files"
 
 workspace "Ascii-GL"
   architecture("x86_64")
-  startproject("ascii-gl")
+  startproject("ascii-gl-tests")
 
   configurations {
     "Release",
@@ -47,7 +47,8 @@ filter "configurations:Release"
 
 -- dependencies compiled from source
 group "Dependencies"
-  -- include("libs/dependency_source_code")
+  --include("libs/nvdialog")
 
 group ""
   include("ascii-gl")
+  include("tests")

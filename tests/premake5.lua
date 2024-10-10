@@ -1,14 +1,12 @@
--- ascii-gl (project)
-project "ascii-gl"
-  kind "StaticLib"
+-- ascii-gl-tests (project)
+project "ascii-gl-tests"
+  kind "ConsoleApp"
   language "C++"
   cppdialect "C++20"
   staticruntime "On"
 
   targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
   objdir ("%{wks.location}/build/" .. outputdir .. "%{prj.name}")
-
-  IncludeDir["ascii-gl"] = "%{wks.location}/ascii-gl/include"
 
   -- Not using pre compiled header yet --
   -- pchheader "pch.h"
@@ -28,7 +26,7 @@ project "ascii-gl"
   }
 
   includedirs {
-	  --IncludeDir["nvdialog"],
+	  IncludeDir["ascii-gl"],
     "include/",
     "source/"
   }
@@ -37,6 +35,7 @@ project "ascii-gl"
   }
 
   links {
+    "ascii-gl",
   }
 
   filter "system:linux"
