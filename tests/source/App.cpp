@@ -26,13 +26,15 @@ class VertexShader : public IVertexShader
 public:
   VertexShader(Program &parent) : IVertexShader(parent) {}
 
-  virtual glm::vec4 operator()(const IVertex &vertex) const override
+  virtual glm::vec4 operator()(const IVertex &vertex, size_t idx) const override
   {
-    return operator()(static_cast<const Vertex&>(vertex));
+    return operator()(static_cast<const Vertex&>(vertex), idx);
   }
 
-  glm::vec4 operator()(const Vertex &vertex) const
+  glm::vec4 operator()(const Vertex &vertex, size_t idx) const
   {
+
+    printf("%s%llu", idx ? ", " : "", idx);
     return glm::vec4(vertex.position, 1) / 10.0f;
   }
 };

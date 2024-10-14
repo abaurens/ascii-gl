@@ -32,7 +32,7 @@ class IVertexShader
 public:
   IVertexShader(Program &parent) : m_parent(parent) {}
 
-  virtual glm::vec4 operator()(const IVertex &vertex) const = 0;
+  virtual glm::vec4 operator()(const IVertex &vertex, size_t idx) const = 0;
 
 private:
   const Program &m_parent;
@@ -54,7 +54,7 @@ concept IsVertexShader = std::is_base_of<IVertexShader, VertexShader>::value;
 template<class VertexShader>
 concept IsValidVertexShader = IsVertexShader<VertexShader> && requires (const VertexShader &s, IVertex &v)
 {
-  s(v);
+  s(v, 0);
 };
 
 

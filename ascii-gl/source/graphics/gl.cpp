@@ -4,6 +4,9 @@
 
 #include <frozen/map.h>
 
+#include <execution>
+#include <algorithm>
+
 namespace gl
 {
   namespace draw_implementation
@@ -122,10 +125,17 @@ namespace gl
       Buffer        &vertices = buffer.value();
 
       glm::vec4 *geometryBuffer = Context::Instance()->GetGeometryBuffer(vertices.Count());
-      for (size_t i = 0; i < vertices.Count(); i++)
-      {
-        geometryBuffer[i] = shader(vertices.Vertex(i));
-      }
+
+      printf("  Vertex shader: [ ");
+      std::for_each(
+        std::execution::par_unseq,
+        geometryBuffer,
+        geometryBuffer + vertices.Count(),
+        [geometryBuffer, &shader, &vertices](glm::vec4 &pos) {
+        size_t i = &pos - geometryBuffer;
+        pos = shader(vertices.Vertex(i), i);
+      });
+      printf(" ]\n");
     }
 
     return draw_implementation::functions.at(mode)(program.value(), buffer.value(), indicesCount, indices);
@@ -149,7 +159,7 @@ namespace gl
         int index = indices[i];
         const glm::vec4 &pos = geometryBuffer[index];
 
-        printf("  Point[%llu] = { %5.2f, %5.2f, %5.2f, %5.2f }\n", i, pos.x, pos.y, pos.z, pos.w);
+        //printf("  Point[%llu] = { %5.2f, %5.2f, %5.2f, %5.2f }\n", i, pos.x, pos.y, pos.z, pos.w);
       }
     }
 
@@ -166,14 +176,14 @@ namespace gl
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
 
-        printf("  line[%llu] = [\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
-          "  ]\n",
-          i / 2,
-          p1.x, p1.y, p1.z, p1.w,
-          p2.x, p2.y, p2.z, p2.w
-        );
+        //printf("  line[%llu] = [\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
+        //  "  ]\n",
+        //  i / 2,
+        //  p1.x, p1.y, p1.z, p1.w,
+        //  p2.x, p2.y, p2.z, p2.w
+        //);
       }
     }
 
@@ -191,14 +201,14 @@ namespace gl
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
 
-        printf("  line[%llu] = [\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
-          "  ]\n",
-          i - 1,
-          p1.x, p1.y, p1.z, p1.w,
-          p2.x, p2.y, p2.z, p2.w
-        );
+        //printf("  line[%llu] = [\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
+        //  "  ]\n",
+        //  i - 1,
+        //  p1.x, p1.y, p1.z, p1.w,
+        //  p2.x, p2.y, p2.z, p2.w
+        //);
       }
     }
 
@@ -216,14 +226,14 @@ namespace gl
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
 
-        printf("  line[%llu] = [\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
-          "  ]\n",
-          i - 1,
-          p1.x, p1.y, p1.z, p1.w,
-          p2.x, p2.y, p2.z, p2.w
-        );
+        //printf("  line[%llu] = [\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
+        //  "  ]\n",
+        //  i - 1,
+        //  p1.x, p1.y, p1.z, p1.w,
+        //  p2.x, p2.y, p2.z, p2.w
+        //);
       }
     }
 
@@ -242,16 +252,16 @@ namespace gl
         const glm::vec4 &p2 = geometryBuffer[i2];
         const glm::vec4 &p3 = geometryBuffer[i3];
 
-        printf("  triangle[%llu] = [\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
-          "  ]\n",
-          i / 3,
-          p1.x, p1.y, p1.z, p1.w,
-          p2.x, p2.y, p2.z, p2.w,
-          p3.x, p3.y, p3.z, p3.w
-        );
+        //printf("  triangle[%llu] = [\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
+        //  "  ]\n",
+        //  i / 3,
+        //  p1.x, p1.y, p1.z, p1.w,
+        //  p2.x, p2.y, p2.z, p2.w,
+        //  p3.x, p3.y, p3.z, p3.w
+        //);
       }
     }
 
@@ -271,16 +281,16 @@ namespace gl
         const glm::vec4 &p2 = geometryBuffer[i2];
         const glm::vec4 &p3 = geometryBuffer[i3];
 
-        printf("  triangle[%llu] = [\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
-          "  ]\n",
-          i - 2,
-          p1.x, p1.y, p1.z, p1.w,
-          p2.x, p2.y, p2.z, p2.w,
-          p3.x, p3.y, p3.z, p3.w
-        );
+        //printf("  triangle[%llu] = [\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
+        //  "  ]\n",
+        //  i - 2,
+        //  p1.x, p1.y, p1.z, p1.w,
+        //  p2.x, p2.y, p2.z, p2.w,
+        //  p3.x, p3.y, p3.z, p3.w
+        //);
       }
     }
 
@@ -300,16 +310,16 @@ namespace gl
         const glm::vec4 &p2 = geometryBuffer[i2];
         const glm::vec4 &p3 = geometryBuffer[i3];
 
-        printf("  triangle[%llu] = [\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
-          "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
-          "  ]\n",
-          i - 2,
-          p1.x, p1.y, p1.z, p1.w,
-          p2.x, p2.y, p2.z, p2.w,
-          p3.x, p3.y, p3.z, p3.w
-        );
+        //printf("  triangle[%llu] = [\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f },\n"
+        //  "    { %5.2f, %5.2f, %5.2f, %5.2f }\n"
+        //  "  ]\n",
+        //  i - 2,
+        //  p1.x, p1.y, p1.z, p1.w,
+        //  p2.x, p2.y, p2.z, p2.w,
+        //  p3.x, p3.y, p3.z, p3.w
+        //);
       }
     }
   }
