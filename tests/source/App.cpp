@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 struct Vertex : public IVertex
 {
@@ -33,6 +34,7 @@ public:
 
   glm::vec4 operator()(const Vertex &vertex, size_t idx) const
   {
+    const glm::mat4 &prj = Uniform<glm::mat4>("u_proj");
 
     printf("%s%llu", idx ? ", " : "", idx);
     return glm::vec4(vertex.position, 1) / 10.0f;
@@ -74,6 +76,9 @@ App::App()
   gl::AttachShader<FragmentShader>(program);
 
   gl::LinkProgram(program); // only returns false if the program lacks a vertex or fragment shader
+
+  glm::mat4 proj = glm::perspective(70.0f, 16.0f / 9.0f, 0.1f, 100.0f);
+  gl::Uniform(program, "u_proj", proj);
 
   int vao;
   gl::CreateBuffers(1, &vao);

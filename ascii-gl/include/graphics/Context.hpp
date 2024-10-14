@@ -14,11 +14,11 @@ class Context
 public:
   static Scope<Context> &Instance();
 
-  std::optional<std::reference_wrapper<Program>> GetProgram(int programId);
-  std::optional<std::reference_wrapper<Program>> GetBoundProgram();
+  std::optional<Program*> GetProgram(int programId);
+  std::optional<Program*> GetBoundProgram();
 
-  std::optional<std::reference_wrapper<Buffer>> GetBuffer(int bufferId);
-  std::optional<std::reference_wrapper<Buffer>> GetBoundBuffer();
+  std::optional<Buffer*> GetBuffer(int bufferId);
+  std::optional<Buffer*> GetBoundBuffer();
 
   glm::vec4 *GetGeometryBuffer(size_t vertexCount);
   const glm::vec4 *GetGeometryBuffer() const { return m_geometryBuffer.data(); };

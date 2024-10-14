@@ -9,29 +9,29 @@ Scope<Context> &Context::Instance()
   return m_instance;
 }
 
-std::optional<std::reference_wrapper<Program>> Context::GetBoundProgram()
+std::optional<Program*> Context::GetBoundProgram()
 {
   return GetProgram(m_bound_program);
 }
 
-std::optional<std::reference_wrapper<Program>> Context::GetProgram(int programId)
+std::optional<Program*> Context::GetProgram(int programId)
 {
   if (!IsProgram(programId))
     return std::nullopt;
 
-  return m_programs[programId];
+  return &m_programs[programId];
 }
 
 
-std::optional<std::reference_wrapper<Buffer>> Context::GetBuffer(int bufferId)
+std::optional<Buffer*> Context::GetBuffer(int bufferId)
 {
   if (!IsBuffer(bufferId))
     return std::nullopt;
 
-  return m_vertexBuffers[bufferId];
+  return &m_vertexBuffers[bufferId];
 }
 
-std::optional<std::reference_wrapper<Buffer>> Context::GetBoundBuffer()
+std::optional<Buffer*> Context::GetBoundBuffer()
 {
   return GetBuffer(m_bound_buffer);
 }

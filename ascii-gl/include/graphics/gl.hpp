@@ -69,14 +69,42 @@ namespace gl
     requires IsShader<Shader>
   void AttachShader(int programId)
   {
-    std::optional<std::reference_wrapper<Program>> program_opt;
+    std::optional<Program*> program_opt;
 
     program_opt = Context::Instance()->GetProgram(programId);
     if (!program_opt.has_value())
       return;
 
-    Program &program = program_opt.value();
+    Program &program = *program_opt.value();
     program.Attach(new Shader(program));
+  }
+
+  template<class T>
+  void Uniform(int programId, const std::string_view name, const T &value)
+  {
+    using U = std::remove_cvref_t<T>;
+    std::optional<Program *> program_opt;
+
+    program_opt = Context::Instance()->GetProgram(programId);
+    if (!program_opt.has_value())
+      return;
+
+    Program &program = *program_opt.value();
+    return program.UploadUniform<U>(name, value);
+  }
+
+  template<class T>
+  void Uniform(int programId, const std::string_view name, T &&value)
+  {
+    using U = std::remove_cvref_t<T>;
+    std::optional<Program *> program_opt;
+
+    program_opt = Context::Instance()->GetProgram(programId);
+    if (!program_opt.has_value())
+      return;
+
+    Program &program = *program_opt.value();
+    return program.UploadUniform<U>(name, std::forward<U>(value));
   }
 
   // Draw calls API

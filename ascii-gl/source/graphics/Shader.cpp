@@ -15,5 +15,4 @@ bool Program::IsValid()
   return (m_vertexShader && m_fragmentShader);
 }
 
-/// TODO: Implement the uniform system
 /// TODO: Implement the in/out system (variable interpolation)

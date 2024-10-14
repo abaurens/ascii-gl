@@ -1,11 +1,18 @@
 #include <iostream>
 
 #include "App.hpp"
+#include "Dialogs.hpp"
 
 int main()
 {
-  App app;
-
-  app.Run();
+  try
+  {
+    App app;
+    app.Run();
+  }
+  catch (const std::exception &exception)
+  {
+    dial::Critical("Unhandled exception", exception.what());
+  }
   return 0;
 }

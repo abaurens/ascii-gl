@@ -10,8 +10,8 @@
 #include "graphics/Shader.hpp"
 
 
+#include <stdexcept>
 #include <concepts>
-
 #include <memory>
 
 #include <map>
