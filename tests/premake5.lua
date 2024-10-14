@@ -26,12 +26,15 @@ project "ascii-gl-tests"
   }
 
   includedirs {
+	  IncludeDir["glm"],
+	  IncludeDir["frozen"],
 	  IncludeDir["ascii-gl"],
     "include/",
     "source/"
   }
 
   defines {
+    "_USE_MATH_DEFINES"
   }
 
   links {

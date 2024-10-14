@@ -5,6 +5,8 @@
 #include <Windows.h>
 #undef near
 #undef far
+#undef min
+#undef max
 
 class WindowsTerminal : public Terminal
 {
@@ -25,6 +27,8 @@ public:
   virtual void SetUserPointer(void *ptr) override { m_userData = ptr; }
   virtual void *GetUserPointer() const override { return m_userData; }
 
+  virtual void Display() override;
+
   // callbacks
 public:
   virtual void SetResizeCallback(TermResizeFunc callback) override { m_resizeCallback = callback; }
@@ -44,6 +48,7 @@ private:
   void OnFocusEvent(const FOCUS_EVENT_RECORD &event);
   void OnResizeEvent(const WINDOW_BUFFER_SIZE_RECORD &event);
 
+  void ResetOutputBuffer();
 private:
   size_t m_width = 0;
   size_t m_height = 0;
@@ -51,6 +56,10 @@ private:
   HANDLE m_inputHandle;
   HANDLE m_outputHandle;
   DWORD  m_savedMode;
+
+  Scope<char[]> m_outputBuffer;
+
+
 
   void *m_userData = nullptr;
 

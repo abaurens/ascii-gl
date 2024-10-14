@@ -2,6 +2,8 @@
 #include "Dialogs.hpp"
 #include "core/Core.hpp"
 
+#include "graphics/Context.hpp"
+
 # include <io.h>
 #define write _write
 
@@ -12,8 +14,6 @@ Ref<Terminal> Terminal::Create()
 
 WindowsTerminal::WindowsTerminal()
 {
-  dial::Message("Restoring Windows console mode ...");
-
   // get the inpout and output handles
   m_inputHandle  = GetStdHandle(STD_INPUT_HANDLE);
   m_outputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -39,6 +39,8 @@ WindowsTerminal::WindowsTerminal()
 
   m_width  = static_cast<size_t>(info.srWindow.Right  - info.srWindow.Left + 1);
   m_height = static_cast<size_t>(info.srWindow.Bottom - info.srWindow.Top  + 1);
+
+  ResetOutputBuffer();
 
   // switch to alternate buffer
   write(1, "\033[?1049h", 8);
@@ -118,8 +120,6 @@ void WindowsTerminal::PollEvents()
 //
 //}
 
-
-
 void WindowsTerminal::SetCursorPos(unsigned int x, unsigned int y)
 {
   // windows terminal coordinates are 1 based
@@ -127,6 +127,63 @@ void WindowsTerminal::SetCursorPos(unsigned int x, unsigned int y)
 
   printf("\033[%u;%uH", y, x);
 }
+
+void WindowsTerminal::Display()
+{
+  const FrameBuffer &framebuffer = Context::Instance()->GetFrameBuffer();
+
+  const size_t width  = std::min(m_width,  framebuffer.Width());
+  const size_t height = std::min(m_height, framebuffer.Height());
+
+  // build the console buffer for writing
+  unsigned int index = 0;
+  for (size_t y = 0; y < height; ++y)
+  {
+    for (size_t x = 0; x < width; ++x)
+    {
+      const Pixel &pixel = framebuffer.GetPixel(x, y);
+
+      uint8_t color_type = 38;
+      char character = pixel.character;
+
+      // non printable characters are treated as spaces
+      if (pixel.character <= ' ' || pixel.character > '~')
+      {
+        character = ' ';
+        color_type = 48;
+      }
+
+      if (pixel.color.value == 0)
+      {
+        index += snprintf(m_outputBuffer.get() + index, 4 + 2 + 1, "\033[0m%c ", character);
+      }
+      else
+      {
+        index += snprintf(m_outputBuffer.get() + index, 21 + 2 + 1,
+          "\033[0;%u;2;%u;%u;%um%c ",
+          color_type,
+          pixel.color.r,
+          pixel.color.g,
+          pixel.color.b,
+          character
+        );
+      }
+    }
+
+    m_outputBuffer[index++] = '\n';
+  }
+
+  // draw the closing line (a line full of space with no colors, to clear anything left after a resize)
+  index += snprintf(m_outputBuffer.get() + index, 4 + m_width + 1, "\033[0m%*c", (unsigned int)m_width, ' ');
+
+  // set cursor to top left
+  SetCursorPos(0, 0);
+  // show the buffer to the screen
+  write(1, m_outputBuffer.get(), (unsigned int)index);
+}
+
+
+
 
 void WindowsTerminal::OnKeyEvent(const KEY_EVENT_RECORD &event)
 {
@@ -210,8 +267,18 @@ void WindowsTerminal::OnResizeEvent(const WINDOW_BUFFER_SIZE_RECORD &event)
   m_width  = static_cast<size_t>(event.dwSize.X);
   m_height = static_cast<size_t>(event.dwSize.Y) - 1;
 
+  ResetOutputBuffer();
+
   if (m_resizeCallback)
     m_resizeCallback(*this, m_width, m_height);
+}
+
+void WindowsTerminal::ResetOutputBuffer()
+{
+  constexpr size_t pixel_code_size = 21 + 2; // 21 characters for the pixel code + 2 for the actual pixel
+  constexpr size_t newline_size = 1;
+  constexpr size_t closing_line_count = 1;
+  m_outputBuffer = std::make_unique<char[]>((pixel_code_size * m_width + newline_size) * (m_height + closing_line_count));
 }
 
 void WindowsTerminal::OnMenuEvent(const MENU_EVENT_RECORD &event)

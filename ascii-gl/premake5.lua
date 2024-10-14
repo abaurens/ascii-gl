@@ -28,12 +28,14 @@ project "ascii-gl"
   }
 
   includedirs {
-	  --IncludeDir["nvdialog"],
+	  IncludeDir["glm"],
+	  IncludeDir["frozen"],
     "include/",
     "source/"
   }
 
   defines {
+    "_USE_MATH_DEFINES"
   }
 
   links {

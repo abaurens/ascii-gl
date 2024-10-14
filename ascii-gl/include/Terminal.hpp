@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Ref.hpp"
-
-#include <cstdint>
+#include "ascii-gl.hpp"
 
 class Terminal
 {
@@ -14,14 +12,12 @@ public:
   virtual size_t Width() const = 0;
   virtual size_t Height() const = 0;
 
-  //virtual void SetWidth(size_t width) = 0;
-  //virtual void SetHeight(size_t height) = 0;
-  //virtual void SetSize(size_t width, size_t height) = 0;
-
   virtual void SetUserPointer(void *ptr) = 0;
   virtual void *GetUserPointer() const = 0;
 
   virtual void SetCursorPos(unsigned int x, unsigned int y) = 0;
+
+  virtual void Display() = 0;
 
 protected:
   using TermResizeFunc = void (*)(Terminal &term, size_t width, size_t height);

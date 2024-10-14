@@ -24,8 +24,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 --vectorextensions "SSE4.2"
 
 defines {
-    --- temporary : stb will most likely be reworked
-    "",
+  "",
 }
 
 workspace_files {
@@ -47,7 +46,8 @@ filter "configurations:Release"
 
 -- dependencies compiled from source
 group "Dependencies"
-  --include("libs/nvdialog")
+  include("libs/glm")
+  include("libs/frozen")
 
 group ""
   include("ascii-gl")
