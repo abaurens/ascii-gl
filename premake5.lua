@@ -8,7 +8,8 @@ workspace "Ascii-GL"
 
   configurations {
     "Release",
-    "Debug"
+    "Debug",
+    "Debug-NoThreads",
   }
 
 IncludeDir = {}
@@ -35,7 +36,10 @@ workspace_files {
 filter "configurations:windows"
   defines "_WIN32"
 
-filter "configurations:Debug"
+filter "configurations:Debug-NoThreads"
+  defines "SINGLE_THREADED"
+
+filter "configurations:Debug*"
   defines "_DEBUG"
   runtime "Debug"
   symbols "On"

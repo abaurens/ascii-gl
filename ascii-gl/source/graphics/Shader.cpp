@@ -15,4 +15,4 @@ bool Program::IsValid()
   return (m_vertexShader && m_fragmentShader);
 }
 
-/// TODO: Implement the in/out system (variable interpolation)
+/// TODO: Implement the layout in/out system (variable interpolation)

@@ -15,6 +15,7 @@
 #include <memory>
 
 #include <map>
+#include <array>
 #include <vector>
 #include <string>
 #include <optional>

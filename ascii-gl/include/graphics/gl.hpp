@@ -25,6 +25,8 @@ namespace gl
     TRIANGLE_FAN
   };
 
+  using enum RenderMode;
+
   // Buffer API
   void CreateBuffers(size_t size, int *buffers);
   void DeleteBuffers(size_t size, int *buffers);

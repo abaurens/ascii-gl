@@ -1,6 +1,7 @@
 #include "App.hpp"
 
 #include "graphics/gl.hpp"
+#include "graphics/Primitives.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -34,10 +35,13 @@ public:
 
   glm::vec4 operator()(const Vertex &vertex, size_t idx) const
   {
-    const glm::mat4 &prj = Uniform<glm::mat4>("u_proj");
+    const glm::mat4 &u_viewProjection = Uniform<glm::mat4>("u_viewProjection");
+    const glm::mat4 &u_transform      = Uniform<glm::mat4>("u_transform");
+
+    glm::vec4 &&result = u_viewProjection *u_transform *glm::vec4(vertex.position, 1);
 
     printf("%s%llu", idx ? ", " : "", idx);
-    return glm::vec4(vertex.position, 1) / 10.0f;
+    return result;
   }
 };
 
@@ -47,8 +51,49 @@ public:
   FragmentShader(Program &parent) : IFragmentShader(parent) {}
 };
 
+#include <array>
+
 App::App()
 {
+  PrimitiveBuffer buffer;
+
+  buffer.InsertPoint(Point{ { 10 } });
+  buffer.InsertTriangle(Triangle{ {  5, 17, 14 } });
+  buffer.InsertLine(Line{ { 21,  8 } });
+  buffer.InsertTriangle(Triangle{ { 71, 12, 20 } });
+
+  int i = 0;
+  for (IPrimitive &prim : buffer)
+  {
+    switch (prim.vertexCount)
+    {
+    case 1:
+    {
+      Point &point = static_cast<Point &>(prim);
+      std::cout << "Point[" << i++ << "] = { "
+        << point.indices[0] << " }\n";
+      break;
+    }
+    case 2:
+    {
+      Line &line = static_cast<Line &>(prim);
+      std::cout << "Line[" << i++ << "] = { "
+        << line.indices[0] << ", "
+        << line.indices[1] << " }\n";
+     break;
+    }
+    case 3:
+    {
+      Triangle &triangle = static_cast<Triangle &>(prim);
+      std::cout << "Triangle[" << i++ << "] = { "
+        << triangle.indices[0] << ", "
+        << triangle.indices[1] << ", "
+        << triangle.indices[2] << " }\n";
+     break;
+    }
+    }
+  }
+
   //m_terminal = Terminal::Create();
   //
   //m_terminal->SetUserPointer(this);
@@ -69,8 +114,8 @@ App::App()
   int program = gl::CreateProgram();
   gl::UseProgram(program);
 
-  gl::CompileShader<VertexShader>();
-  gl::CompileShader<FragmentShader>();
+  gl::CompileShader<VertexShader>();   // triggers a compile error if the VertexShader lacks the call operator
+  gl::CompileShader<FragmentShader>(); // triggers a compile error if the FragmentShader doesn't inherit from IFragmentShader
 
   gl::AttachShader<VertexShader>(program);
   gl::AttachShader<FragmentShader>(program);
@@ -78,7 +123,10 @@ App::App()
   gl::LinkProgram(program); // only returns false if the program lacks a vertex or fragment shader
 
   glm::mat4 proj = glm::perspective(70.0f, 16.0f / 9.0f, 0.1f, 100.0f);
-  gl::Uniform(program, "u_proj", proj);
+  glm::mat4 view = glm::lookAt(glm::vec3{ 0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1, 0 });
+  gl::Uniform(program, "u_viewProjection", proj * view);
+
+  gl::Uniform(program, "u_transform", glm::identity<glm::mat4>());
 
   int vao;
   gl::CreateBuffers(1, &vao);
@@ -113,21 +161,21 @@ App::App()
   gl::BindBuffer(vao);
 
   std::cout << "Points\n";
-  gl::DrawElements(gl::RenderMode::POINTS, { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::POINTS, { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
 
   std::cout << "\nLines\n";
-  gl::DrawElements(gl::RenderMode::LINES,      { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::LINES,      { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
   std::cout << "\nLine loop\n";
-  gl::DrawElements(gl::RenderMode::LINE_LOOP,  { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::LINE_LOOP,  { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
   std::cout << "\nLine strip\n";
-  gl::DrawElements(gl::RenderMode::LINE_STRIP, { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::LINE_STRIP, { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
 
   std::cout << "\nTriangles\n";
-  gl::DrawElements(gl::RenderMode::TRIANGLES,      { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::TRIANGLES,      { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
   std::cout << "\nTriangle strip\n";
-  gl::DrawElements(gl::RenderMode::TRIANGLE_STRIP, { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::TRIANGLE_STRIP, { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
   std::cout << "\nTriangle fan\n";
-  gl::DrawElements(gl::RenderMode::TRIANGLE_FAN,   { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
+  gl::DrawElements(gl::TRIANGLE_FAN,   { 0, 1, 2,   3, 4, 5,   6, 7, 8 });
 
   exit(0);
 }

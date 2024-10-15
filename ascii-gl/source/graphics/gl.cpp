@@ -23,16 +23,16 @@ namespace gl
     void DrawTriangleStrip(Program &program, Buffer &buffer, size_t indicesCount, const int *indices);
     void DrawTriangleFan(Program &program, Buffer &buffer, size_t indicesCount, const int *indices);
 
-    frozen::map<RenderMode, DrawFunction, 7> functions = {
-      { RenderMode::POINTS, DrawPoints },
+    frozen::map<RenderMode, DrawFunction, 7> primitiveAssemblers = {
+      { POINTS, DrawPoints },
 
-      { RenderMode::LINES,      DrawLines     },
-      { RenderMode::LINE_LOOP,  DrawLineLoop  },
-      { RenderMode::LINE_STRIP, DrawLineStrip },
+      { LINES,      DrawLines     },
+      { LINE_LOOP,  DrawLineLoop  },
+      { LINE_STRIP, DrawLineStrip },
 
-      { RenderMode::TRIANGLES,      DrawTriangles     },
-      { RenderMode::TRIANGLE_STRIP, DrawTriangleStrip },
-      { RenderMode::TRIANGLE_FAN,   DrawTriangleFan   },
+      { TRIANGLES,      DrawTriangles     },
+      { TRIANGLE_STRIP, DrawTriangleStrip },
+      { TRIANGLE_FAN,   DrawTriangleFan   },
     };
   };
 }
@@ -128,7 +128,9 @@ namespace gl
 
       printf("  Vertex shader: [ ");
       std::for_each(
-        //std::execution::par_unseq,
+       #ifndef SINGLE_THREADED
+        std::execution::par,
+       #endif
         geometryBuffer,
         geometryBuffer + vertices.Count(),
         [geometryBuffer, &shader, &vertices](glm::vec4 &pos) {
@@ -138,7 +140,9 @@ namespace gl
       printf(" ]\n");
     }
 
-    return draw_implementation::functions.at(mode)(*program.value(), *buffer.value(), indicesCount, indices);
+    draw_implementation::primitiveAssemblers.at(mode)(*program.value(), *buffer.value(), indicesCount, indices);
+
+    return;
   }
 }
 
@@ -156,7 +160,7 @@ namespace gl
       // geometry creation
       for (size_t i = 0; i < indicesCount; i++)
       {
-        int index = indices[i];
+        unsigned index = reinterpret_cast<const unsigned *>(indices)[i];
         const glm::vec4 &pos = geometryBuffer[index];
 
         printf("  Point[%llu] = { %5.2f, %5.2f, %5.2f, %5.2f }\n", i, pos.x, pos.y, pos.z, pos.w);
@@ -171,8 +175,8 @@ namespace gl
 
       for (size_t i = 0; i < indicesCount; i += 2)
       {
-        int i1 = indices[i + 0];
-        int i2 = indices[i + 1];
+        unsigned i1 = reinterpret_cast<const unsigned *>(indices)[i + 0];
+        unsigned i2 = reinterpret_cast<const unsigned *>(indices)[i + 1];
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
 
@@ -196,8 +200,8 @@ namespace gl
 
       for (size_t i = 1; i <= indicesCount; ++i)
       {
-        int i1 = indices[i - 1];
-        int i2 = indices[i % indicesCount];
+        unsigned i1 = reinterpret_cast<const unsigned *>(indices)[i - 1];
+        unsigned i2 = reinterpret_cast<const unsigned *>(indices)[i % indicesCount];
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
 
@@ -221,8 +225,8 @@ namespace gl
 
       for (size_t i = 1; i < indicesCount; ++i)
       {
-        int i1 = indices[i - 1];
-        int i2 = indices[i - 0];
+        unsigned i1 = reinterpret_cast<const unsigned *>(indices)[i - 1];
+        unsigned i2 = reinterpret_cast<const unsigned *>(indices)[i - 0];
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
 
@@ -245,9 +249,9 @@ namespace gl
 
       for (size_t i = 0; i < indicesCount; i += 3)
       {
-        int i1 = indices[i + 0];
-        int i2 = indices[i + 1];
-        int i3 = indices[i + 2];
+        unsigned i1 = reinterpret_cast<const unsigned *>(indices)[i + 0];
+        unsigned i2 = reinterpret_cast<const unsigned *>(indices)[i + 1];
+        unsigned i3 = reinterpret_cast<const unsigned *>(indices)[i + 2];
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
         const glm::vec4 &p3 = geometryBuffer[i3];
@@ -274,9 +278,9 @@ namespace gl
 
       for (size_t i = 2; i < indicesCount; ++i)
       {
-        int i1 = indices[i - 2];
-        int i2 = indices[i - 1];
-        int i3 = indices[i - 0];
+        unsigned i1 = reinterpret_cast<const unsigned *>(indices)[i - 2];
+        unsigned i2 = reinterpret_cast<const unsigned *>(indices)[i - 1];
+        unsigned i3 = reinterpret_cast<const unsigned *>(indices)[i - 0];
         const glm::vec4 &p1 = geometryBuffer[i1];
         const glm::vec4 &p2 = geometryBuffer[i2];
         const glm::vec4 &p3 = geometryBuffer[i3];
@@ -301,12 +305,12 @@ namespace gl
 
       const glm::vec4 *geometryBuffer = Context::Instance()->GetGeometryBuffer();
 
-      int i1 = indices[0];
+      unsigned i1 = reinterpret_cast<const unsigned *>(indices)[0];
       const glm::vec4 &p1 = geometryBuffer[i1];
       for (size_t i = 2; i < indicesCount; ++i)
       {
-        int i2 = indices[i - 1];
-        int i3 = indices[i - 0];
+        unsigned i2 = reinterpret_cast<const unsigned *>(indices)[i - 1];
+        unsigned i3 = reinterpret_cast<const unsigned *>(indices)[i - 0];
         const glm::vec4 &p2 = geometryBuffer[i2];
         const glm::vec4 &p3 = geometryBuffer[i3];
 
