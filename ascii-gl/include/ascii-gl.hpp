@@ -3,7 +3,6 @@
 #include "core/Core.hpp"
 #include "core/types.h"
 
-#include "graphics/Context.hpp"
 #include "graphics/Buffer.hpp"
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/IVertex.hpp"

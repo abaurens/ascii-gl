@@ -9,6 +9,8 @@ int main()
 {
   Log::Init();
 
+  ::Log::GetLogger()->set_level(spdlog::level::warn);
+
   try
   {
     App app;

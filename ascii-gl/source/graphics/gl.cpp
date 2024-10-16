@@ -130,18 +130,17 @@ namespace gl
     // Prepare vertices for rendering
     {
       // geometry shader runs here
-      
-
+      ///TODO: implement geometry shader ?
 
       // clip the vertices
       PrimitiveProcessor::ProcessPrimitive(mode, context.GetPrimitiveBuffer(), indicesCount, indices);
 
-      // convert from clip space to normalized device coordinates
+      // convert from clip space to normalized device coordinates and then to screen space
       const glm::vec4 viewport = context.GetViewport();
       std::for_each(
-        #ifndef SINGLE_THREADED
+       #ifndef SINGLE_THREADED
         std::execution::par,
-        #endif
+       #endif
         geometryBuffer.data(),
         geometryBuffer.data() + geometryBuffer.size(),
         [&context, &viewport](glm::vec4 &pos) {
@@ -158,7 +157,7 @@ namespace gl
 
     // draw the primitives
     {
-
+      /// TODO: implement the rasterizer step
     }
 
 
@@ -198,6 +197,8 @@ namespace gl
             p1.x, p1.y, p1.z, p1.w,
             p2.x, p2.y, p2.z, p2.w
           );
+
+
           break;
         }
         case 3:
@@ -228,7 +229,6 @@ namespace gl
         ++i;
       }
     }
-
 
     return;
   }
