@@ -3,8 +3,12 @@
 #include "App.hpp"
 #include "Dialogs.hpp"
 
+#include "core/Log.hpp"
+
 int main()
 {
+  Log::Init();
+
   try
   {
     App app;

@@ -2,7 +2,7 @@
 
 #include "Terminal.hpp"
 
-#include "graphics/Context.hpp"
+#include "ascii-gl.hpp"
 
 class App
 {
@@ -18,6 +18,4 @@ private:
 
   bool m_running = false;
   Ref<Terminal> m_terminal;
-
-  Context m_glContext;
 };

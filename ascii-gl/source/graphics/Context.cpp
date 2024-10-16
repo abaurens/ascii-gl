@@ -36,11 +36,15 @@ std::optional<Buffer*> Context::GetBoundBuffer()
   return GetBuffer(m_bound_buffer);
 }
 
-glm::vec4 *Context::GetGeometryBuffer(size_t vertexCount)
+std::vector<glm::vec4> &Context::GetGeometryBuffer(size_t vertexCount)
 {
-  if (m_geometryBuffer.size() < vertexCount)
-    m_geometryBuffer.resize(vertexCount);
-  return m_geometryBuffer.data();
+  // Reserve memory for the geometry buffer only if not enough
+  if (m_geometryBuffer.capacity() < vertexCount)
+    m_geometryBuffer.reserve(vertexCount);
+
+  // Make sure the buffer contains the exact amount of elements (resize never reduces the capacity)
+  m_geometryBuffer.resize(vertexCount);
+  return m_geometryBuffer;
 }
 
 bool Context::IsBuffer(int bufferId) const
@@ -96,4 +100,9 @@ void Context::UseProgram(int programId)
   if (!IsProgram(programId))
     m_programs[programId] = Program();
   m_bound_program = programId;
+}
+
+void Context::SetViewport(float x, float y, float width, float height)
+{
+  m_viewport = { x, y, width, height };
 }

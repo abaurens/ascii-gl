@@ -1,4 +1,4 @@
-#include "graphics/Primitives.hpp"
+#include "graphics/primitives/Primitives.hpp"
 
 using iterator = PrimitiveBuffer::iterator;
 
@@ -20,6 +20,45 @@ iterator PrimitiveBuffer::end()
 iterator PrimitiveBuffer::end() const
 {
   return iterator(m_data.get() + m_pos);
+}
+
+iterator PrimitiveBuffer::Erase(iterator it)
+{
+  if (it == end())
+    return it;
+
+  IPrimitive *pos = it.pos;
+  const size_t size = (1 + it->Size());
+
+  const IPrimitive *next = pos + size;
+  const size_t to_move = end().pos - next;
+
+  memmove(pos, next, to_move);
+  m_pos -= size;
+  --m_count;
+
+  return it;
+}
+
+iterator PrimitiveBuffer::Erase(iterator first, iterator last)
+{
+  if (first == last)
+    return last;
+
+  if (last.pos > end().pos)
+    last = end();
+
+  IPrimitive *from = first.pos;
+  const IPrimitive *to = last.pos;
+
+  const size_t size = to - from;
+  const size_t to_move = end().pos - to;
+
+  memmove(from, to, to_move);
+  m_count -= std::distance(first, last);
+  m_pos -= size;
+
+  return first;
 }
 
 IPrimitive &PrimitiveBuffer::operator[](size_t idx)
@@ -53,6 +92,12 @@ void PrimitiveBuffer::Grow(size_t additional)
   memcpy(data, m_data.get(), m_size);
   m_data.reset(data);
   m_size = new_size;
+}
+
+void PrimitiveBuffer::GrowTo(size_t targetSize)
+{
+  if (m_size < targetSize)
+    Grow(targetSize - m_size);
 }
 
 // iterators
@@ -89,4 +134,10 @@ iterator iterator::operator++(int)
   iterator tmp = *this;
   pos += (1 + pos->Size());
   return tmp;
+}
+
+
+size_t distance(iterator first, iterator last)
+{
+  return last - first;
 }

@@ -23,6 +23,9 @@ public:
 
   template<class Primitive>
   const Primitive &As() const { return *reinterpret_cast<const Primitive*>(this); }
+
+private:
+  friend class PrimitiveBuffer;
 };
 
 template<size_t VertexCount>
@@ -90,15 +93,22 @@ public:
   template<class Primitive>
   piterator<Primitive> pend() const { return piterator<Primitive>(m_data.get() + m_pos); }
 
-  template <typename Primitive>
+  template <class Primitive>
   fixation_wrapper<Primitive> fixed() { return { *this }; }
 
-  void Clear() { m_pos = 0; }
+  size_t Size() const { return m_count; }
 
-  void InsertPoint(const Point &point) { return Insert<Point>(point); }
-  void InsertLine(const Line &point) { return Insert<Line>(point); }
-  void InsertTriangle(const Triangle &point) { return Insert<Triangle>(point); }
-  
+  void Clear() { m_pos = 0; m_count = 0; }
+
+  iterator Erase(iterator it);
+  iterator Erase(iterator begin, iterator end);
+
+  template<class Primitive, class... Args>
+  void Insert(const Args&... indices)
+  {
+    return Insert<Primitive>(Primitive{ { indices... }});
+  }
+
   template<class Primitive>
   void Insert(const Primitive &primitive)
   {
@@ -107,7 +117,11 @@ public:
 
     memcpy(m_data.get() + m_pos, &primitive, sizeof(Primitive));
     m_pos += sizeof(Primitive);
+    ++m_count;
   }
+
+  template<class Primitive>
+  void Reserve(size_t size) { return GrowTo(size * sizeof(Primitive)); }
 
   IPrimitive &operator[](size_t idx);
   const IPrimitive &operator[](size_t idx) const;
@@ -115,10 +129,12 @@ public:
 private:
   void Grow() { return Grow(m_size / 2); }
   void Grow(size_t additional);
+  void GrowTo(size_t targetSize);
 
 private:
   size_t m_pos = 0;
   size_t m_size = 0;
+  size_t m_count = 0;
   Scope<IPrimitive[]> m_data;
 };
 
@@ -140,9 +156,20 @@ public:
   bool operator==(const iterator &other) const { return pos == other.pos; }
   bool operator!=(const iterator &other) const { return pos != other.pos; }
 
+  size_t operator-(const iterator &other) const
+  {
+    const IPrimitive *p = pos;
+
+    size_t dist = 0;
+    for (dist = 0; p != other.pos; ++dist)
+      p += (1 + p->Size());
+
+    return dist;
+  }
+
 private:
   friend class PrimitiveBuffer;
-  iterator(IPrimitive *pos) : pos(pos) {}
+  constexpr iterator(IPrimitive *pos) : pos(pos) {}
 
 private:
   IPrimitive *pos;
@@ -153,7 +180,7 @@ template<class Primitive>
 class PrimitiveBuffer::piterator
 {
 public:
-  piterator(iterator it) : pos(it.pos) {}
+  constexpr piterator(iterator it) : pos(static_cast<Primitive*>(it.pos)) {}
 
   piterator operator+(int i) { return (pos + i); }
   piterator operator-(int i) { return (pos - i); }
@@ -177,13 +204,23 @@ public:
   bool operator==(const iterator &other) const { return pos == other.pos; }
   bool operator!=(const iterator &other) const { return pos != other.pos; }
 
+  size_t operator-(const iterator &other) const { return pos - other.pos; }
+
   operator iterator() { return iterator(pos); }
 
 private:
   friend class PrimitiveBuffer;
-  piterator(IPrimitive *pos) : pos(static_cast<Primitive *>(pos)) {}
-  piterator(Primitive *pos) : pos(pos) {}
+  constexpr piterator(IPrimitive *pos) : pos(static_cast<Primitive *>(pos)) {}
+  constexpr piterator(Primitive *pos) : pos(pos) {}
 
 private:
   Primitive *pos;
 };
+
+size_t distance(PrimitiveBuffer::iterator first, PrimitiveBuffer::iterator last);
+
+template<class Primitive>
+size_t distance(PrimitiveBuffer::piterator<Primitive> first, PrimitiveBuffer::piterator<Primitive> last)
+{
+  return last - first;
+}

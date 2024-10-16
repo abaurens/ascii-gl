@@ -27,6 +27,8 @@ namespace gl
 
   using enum RenderMode;
 
+  void Viewport(float x, float y, float width, float height);
+
   // Buffer API
   void CreateBuffers(size_t size, int *buffers);
   void DeleteBuffers(size_t size, int *buffers);

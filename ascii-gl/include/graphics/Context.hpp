@@ -1,8 +1,9 @@
 #pragma once
 
-#include "FrameBuffer.hpp"
-#include "Buffer.hpp"
-#include "Shader.hpp"
+#include "graphics/primitives/Primitives.hpp"
+#include "graphics/FrameBuffer.hpp"
+#include "graphics/Buffer.hpp"
+#include "graphics/Shader.hpp"
 
 #include <glm/vec4.hpp>
 
@@ -20,8 +21,12 @@ public:
   std::optional<Buffer*> GetBuffer(int bufferId);
   std::optional<Buffer*> GetBoundBuffer();
 
-  glm::vec4 *GetGeometryBuffer(size_t vertexCount);
-  const glm::vec4 *GetGeometryBuffer() const { return m_geometryBuffer.data(); };
+  std::vector<glm::vec4> &GetGeometryBuffer(size_t vertexCount);
+  std::vector<glm::vec4> &GetGeometryBuffer() { return m_geometryBuffer; }
+  const std::vector<glm::vec4> &GetGeometryBuffer() const { return m_geometryBuffer; }
+
+  PrimitiveBuffer &GetPrimitiveBuffer() { return m_primitives; }
+  const PrimitiveBuffer &GetPrimitiveBuffer() const { return m_primitives; }
 
   FrameBuffer &GetFrameBuffer() { return m_framebuffer; }
 
@@ -39,6 +44,9 @@ public:
     requires IsVertex<Vertex>
   void BufferData(size_t size, const Vertex *vertices);
 
+  void SetViewport(float x, float y, float width, float height);
+  glm::vec4 GetViewport() const { return m_viewport; }
+
 private:
   static Scope<Context> m_instance;
 
@@ -49,7 +57,10 @@ private:
   std::map<int, Program> m_programs;
   FrameBuffer m_framebuffer;
 
+  PrimitiveBuffer m_primitives;
   std::vector<glm::vec4> m_geometryBuffer;
+
+  glm::vec4 m_viewport = { 0.0f, 0.0f, 1.0f, 1.0f };
 };
 
 template<class Vertex>

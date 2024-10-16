@@ -4,3 +4,6 @@
 [submodule "libs/frozen"]
 	path = libs/frozen
 	url = ../frozen.git
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = ../spdlog.git

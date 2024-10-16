@@ -30,6 +30,8 @@ defines {
 
 workspace_files {
   "premake5.lua",
+  ".editorconfig",
+  ".gitmodules",
   ".gitignore"
 }
 
@@ -51,6 +53,7 @@ filter "configurations:Release"
 -- dependencies compiled from source
 group "Dependencies"
   include("libs/glm")
+  include("libs/spdlog")
   include("libs/frozen")
 
 group ""

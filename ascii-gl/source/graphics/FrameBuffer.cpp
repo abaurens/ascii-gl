@@ -1,5 +1,7 @@
 #include "graphics/FrameBuffer.hpp"
 
+#include "core/Log.hpp"
+
 FrameBuffer::FrameBuffer() : FrameBuffer(0, 0) {}
 
 FrameBuffer::FrameBuffer(int width, int height) : m_width(width), m_height(height), m_pixels(nullptr)

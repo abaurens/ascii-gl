@@ -28,8 +28,9 @@ project "ascii-gl"
   }
 
   includedirs {
-	  IncludeDir["glm"],
-	  IncludeDir["frozen"],
+    IncludeDir["glm"],
+    IncludeDir["frozen"],
+    IncludeDir["spdlog"],
     "include/",
     "source/"
   }

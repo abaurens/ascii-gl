@@ -29,6 +29,7 @@ project "ascii-gl-tests"
 	  IncludeDir["glm"],
 	  IncludeDir["frozen"],
 	  IncludeDir["ascii-gl"],
+	  IncludeDir["spdlog"],
     "include/",
     "source/"
   }
