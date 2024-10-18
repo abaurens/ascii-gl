@@ -46,7 +46,8 @@ inline std::ostream &operator<<(std::ostream &os, const T &data)
   return os << data.ToString();
 }
 
-
+#define SET_LOG_LEVEL(log_level) ::Log::GetLogger()->set_level(spdlog::level:: log_level)
+#define LOG_DEBUG(...) ::Log::GetLogger()->debug(__VA_ARGS__)
 #define LOG_TRACE(...) ::Log::GetLogger()->trace(__VA_ARGS__)
 #define LOG_INFO(...)  ::Log::GetLogger()->info(__VA_ARGS__)
 #define LOG_WARN(...)  ::Log::GetLogger()->warn(__VA_ARGS__)

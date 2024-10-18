@@ -5,9 +5,11 @@
 
 namespace PrimitiveProcessor
 {
-  void ProcessPoints(PrimitiveBuffer &primitives, size_t indicesCount, const int *indices);
-  void ProcessLines(PrimitiveBuffer &primitives, size_t indicesCount, const int *indices);
-  void ProcessTriangles(PrimitiveBuffer &primitives, size_t indicesCount, const int *indices);
+  PrimitiveBuffer::iterator ProcessPoint(std::vector<glm::vec4> &geometryBuffer, PrimitiveBuffer &primitives, PrimitiveBuffer::piterator<Point> point);
+  PrimitiveBuffer::iterator ProcessLine(std::vector<glm::vec4> &geometryBuffer, PrimitiveBuffer &primitives, PrimitiveBuffer::piterator<Line> line);
+  PrimitiveBuffer::iterator ProcessTriangle(std::vector<glm::vec4> &geometryBuffer, PrimitiveBuffer &primitives, PrimitiveBuffer::piterator<Triangle> triangle);
 
-  void ProcessPrimitive(gl::RenderMode mode, PrimitiveBuffer &primitives, size_t indicesCount, const int *indices);
+  PrimitiveBuffer::iterator ProcessPrimitive(std::vector<glm::vec4> &geometryBuffer, PrimitiveBuffer &primitives, PrimitiveBuffer::iterator primitive);
+
+  void ProcessPrimitives(gl::RenderMode mode, PrimitiveBuffer &primitives);
 }

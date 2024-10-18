@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Terminal.hpp"
+#include "TermBuffer.hpp"
 
 #include <Windows.h>
 #undef near
@@ -48,7 +49,8 @@ private:
   void OnFocusEvent(const FOCUS_EVENT_RECORD &event);
   void OnResizeEvent(const WINDOW_BUFFER_SIZE_RECORD &event);
 
-  void ResetOutputBuffer();
+  void ResizeOutputBuffer();
+
 private:
   size_t m_width = 0;
   size_t m_height = 0;
@@ -57,9 +59,7 @@ private:
   HANDLE m_outputHandle;
   DWORD  m_savedMode;
 
-  Scope<char[]> m_outputBuffer;
-
-
+  TermBuffer m_outputBuffer;
 
   void *m_userData = nullptr;
 

@@ -1,11 +1,85 @@
 #include "WindowsTerminal.hpp"
+
 #include "Dialogs.hpp"
 #include "core/Core.hpp"
 
+#include "core/Log.hpp"
 #include "graphics/Context.hpp"
+
+#include "TermBuffer.hpp"
 
 # include <io.h>
 #define write _write
+
+//#define STRING_SIZE(str_literal) (sizeof(str_literal) - 1)
+#define WRITE_CODE(str_literal_code) write(1, str_literal_code, string_size(str_literal_code))
+
+consteval size_t string_size(std::string_view str) { return str.size(); }
+
+//namespace Sizes
+//{
+//  static constexpr size_t color_code = string_size("\033[x8;2;rrr;ggg;bbbm");
+//  static constexpr size_t pixel_char = string_size("  ");
+//  static constexpr size_t reset_code = string_size("\033[0m");
+//
+//  static constexpr size_t clear_code = string_size("\033[2J");
+//  static constexpr size_t newline = string_size("\n");
+//
+//  static constexpr size_t pixel = color_code + pixel_char + reset_code;
+//
+//  // sn_printf needs space for null terminator '\0'
+//  consteval size_t snprintf(size_t size) { return size + 1; }
+//}
+
+//constexpr bool SLOW_MODE = true;
+
+//unsigned int inject_pixel(char *buffer, char character)
+//{
+//  constexpr unsigned int size = Sizes::clear_code + Sizes::pixel_char;
+//  char tmp[] = "\033[0m  ";
+//
+//  tmp[4] = character;
+//
+//  memcpy(buffer, tmp, size);
+//  return size;
+//}
+
+//unsigned int inject_pixel(char *buffer, uint8_t color_type, Color color, char character)
+//{
+//  constexpr unsigned int size = Sizes::pixel;
+//  char tmp[] = "\033[48;2;255;255;255m  \033[0m";
+//  
+//  //tmp[3] = '0' + (color_type % 10);
+//  //color_type /= 10;
+//  //tmp[2] = '0' + (color_type % 10);
+//  
+//  // red
+//  //tmp[9] = '0' + (color.r % 10);
+//  //color.r /= 10;
+//  //tmp[8] = '0' + (color.r % 10);
+//  //color.r /= 10;
+//  //tmp[7] = '0' + (color.r % 10);
+//  //
+//  //// green
+//  //tmp[13] = '0' + (color.g % 10);
+//  //color.g /= 10;
+//  //tmp[12] = '0' + (color.g % 10);
+//  //color.g /= 10;
+//  //tmp[11] = '0' + (color.g % 10);
+//  //
+//  //// blue
+//  //tmp[17] = '0' + (color.b % 10);
+//  //color.b /= 10;
+//  //tmp[16] = '0' + (color.b % 10);
+//  //color.b /= 10;
+//  //tmp[15] = '0' + (color.b % 10);
+//  
+//  //tmp[19] = character;
+//  
+//  memcpy(buffer, tmp, size);
+//  return size;
+//}
+
 
 Ref<Terminal> Terminal::Create()
 {
@@ -40,24 +114,30 @@ WindowsTerminal::WindowsTerminal()
   m_width  = static_cast<size_t>(info.srWindow.Right  - info.srWindow.Left + 1);
   m_height = static_cast<size_t>(info.srWindow.Bottom - info.srWindow.Top  + 1);
 
-  ResetOutputBuffer();
+  ResizeOutputBuffer();
+
+  /// TODO: Move this. It should be in the CreateContext function
+  Context::Instance()->SetFrameBuffer(m_outputBuffer);
 
   // switch to alternate buffer
-  write(1, "\033[?1049h", 8);
+  WRITE_CODE("\033[?1049h");
 
   // hide the cursor
-  write(1, "\033[?25l", 6);
+  WRITE_CODE("\033[?25l");
+
+  // set terminal to be 80 columns wide
+  WRITE_CODE("\033[?3l");
 }
 
 WindowsTerminal::~WindowsTerminal()
 {
+  WRITE_CODE("\033[?3h");
+
   // reverts to default buffer
-  write(1, "\033[?1049l", 8);
+  WRITE_CODE("\033[?1049l");
 
-  // hide the cursor
-  write(1, "\033[?25h", 6);
-
-  
+  // show the cursor
+  WRITE_CODE("\033[?25h");
 
   SetConsoleMode(m_inputHandle, m_savedMode);
 }
@@ -130,56 +210,11 @@ void WindowsTerminal::SetCursorPos(unsigned int x, unsigned int y)
 
 void WindowsTerminal::Display()
 {
-  const FrameBuffer &framebuffer = Context::Instance()->GetFrameBuffer();
-
-  const size_t width  = std::min(m_width,  framebuffer.Width());
-  const size_t height = std::min(m_height, framebuffer.Height());
-
-  // build the console buffer for writing
-  unsigned int index = 0;
-  for (size_t y = 0; y < height; ++y)
-  {
-    for (size_t x = 0; x < width; ++x)
-    {
-      const Pixel &pixel = framebuffer.GetPixel(x, y);
-
-      uint8_t color_type = 38;
-      char character = pixel.character;
-
-      // non printable characters are treated as spaces
-      if (pixel.character <= ' ' || pixel.character > '~')
-      {
-        character = ' ';
-        color_type = 48;
-      }
-
-      if (pixel.color.value == 0)
-      {
-        index += snprintf(m_outputBuffer.get() + index, 4 + 2 + 1, "\033[0m%c ", character);
-      }
-      else
-      {
-        index += snprintf(m_outputBuffer.get() + index, 21 + 2 + 1,
-          "\033[0;%u;2;%u;%u;%um%c ",
-          color_type,
-          pixel.color.r,
-          pixel.color.g,
-          pixel.color.b,
-          character
-        );
-      }
-    }
-
-    m_outputBuffer[index++] = '\n';
-  }
-
-  // draw the closing line (a line full of space with no colors, to clear anything left after a resize)
-  index += snprintf(m_outputBuffer.get() + index, 4 + m_width + 1, "\033[0m%*c", (unsigned int)m_width, ' ');
-
   // set cursor to top left
   SetCursorPos(0, 0);
-  // show the buffer to the screen
-  write(1, m_outputBuffer.get(), (unsigned int)index);
+
+  // write the framebuffer to the terminal
+  write(1, m_outputBuffer.Data(), m_outputBuffer.length());
 }
 
 
@@ -265,20 +300,17 @@ void WindowsTerminal::OnMouseEvent(const MOUSE_EVENT_RECORD &event)
 void WindowsTerminal::OnResizeEvent(const WINDOW_BUFFER_SIZE_RECORD &event)
 {
   m_width  = static_cast<size_t>(event.dwSize.X);
-  m_height = static_cast<size_t>(event.dwSize.Y) - 1;
+  m_height = static_cast<size_t>(event.dwSize.Y);
 
-  ResetOutputBuffer();
+  ResizeOutputBuffer();
 
   if (m_resizeCallback)
     m_resizeCallback(*this, m_width, m_height);
 }
 
-void WindowsTerminal::ResetOutputBuffer()
+void WindowsTerminal::ResizeOutputBuffer()
 {
-  constexpr size_t pixel_code_size = 21 + 2; // 21 characters for the pixel code + 2 for the actual pixel
-  constexpr size_t newline_size = 1;
-  constexpr size_t closing_line_count = 1;
-  m_outputBuffer = std::make_unique<char[]>((pixel_code_size * m_width + newline_size) * (m_height + closing_line_count));
+  m_outputBuffer.Resize(unsigned int(m_width / 2), unsigned int(m_height));
 }
 
 void WindowsTerminal::OnMenuEvent(const MENU_EVENT_RECORD &event)

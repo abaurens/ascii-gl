@@ -1,1 +1,28 @@
-[01:29:18] [info] LOG: Initialized Log!
+[03:06:04] [info] LOG: Initialized Log!
+[03:06:10] [warning] LOG: Timestep: 0.00087670 s | 1e+03 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10513550 s | 1e+01 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10048149 s | 1e+01 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10018201 s | 1e+01 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10540071 s |   9 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10389370 s | 1e+01 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10306209 s | 1e+01 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10225672 s | 1e+01 Fps
+[03:06:10] [warning] LOG: Timestep: 0.10234910 s | 1e+01 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10386634 s | 1e+01 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10424191 s | 1e+01 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10556924 s |   9 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10828388 s |   9 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10479307 s | 1e+01 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10796535 s |   9 Fps
+[03:06:11] [warning] LOG: Timestep: 0.11100090 s |   9 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10937262 s |   9 Fps
+[03:06:11] [warning] LOG: Timestep: 0.10853422 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10957289 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10866594 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10576153 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10295367 s | 1e+01 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10631776 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.11065817 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10565066 s |   9 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10320520 s | 1e+01 Fps
+[03:06:12] [warning] LOG: Timestep: 0.10712385 s |   9 Fps

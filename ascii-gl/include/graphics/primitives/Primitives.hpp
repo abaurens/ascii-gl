@@ -167,6 +167,14 @@ public:
     return dist;
   }
 
+  iterator &operator=(const iterator &other)
+  {
+    pos = other.pos;
+    return *this;
+  }
+
+  iterator next() const { return *this + 1; }
+
 private:
   friend class PrimitiveBuffer;
   constexpr iterator(IPrimitive *pos) : pos(pos) {}
@@ -206,8 +214,23 @@ public:
 
   size_t operator-(const iterator &other) const { return pos - other.pos; }
 
+  piterator &operator=(const iterator &other)
+  {
+    pos = other.pos;
+    return *this;
+  }
+
+  piterator &operator=(const piterator &other)
+  {
+    pos = other.pos;
+    return *this;
+  }
+
   operator iterator() { return iterator(pos); }
 
+  piterator next() const { return *this + 1; }
+  piterator previous() const { return *this - 1; }
+  
 private:
   friend class PrimitiveBuffer;
   constexpr piterator(IPrimitive *pos) : pos(static_cast<Primitive *>(pos)) {}

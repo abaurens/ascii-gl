@@ -8,9 +8,12 @@
 int main()
 {
   Log::Init();
-
-  ::Log::GetLogger()->set_level(spdlog::level::warn);
-
+  
+  
+  SET_LOG_LEVEL(warn);
+  
+  std::cin.get();
+  
   try
   {
     App app;

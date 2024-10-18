@@ -28,7 +28,8 @@ public:
   PrimitiveBuffer &GetPrimitiveBuffer() { return m_primitives; }
   const PrimitiveBuffer &GetPrimitiveBuffer() const { return m_primitives; }
 
-  FrameBuffer &GetFrameBuffer() { return m_framebuffer; }
+  void SetFrameBuffer(FrameBuffer &framebuffer) { m_framebuffer = &framebuffer; }
+  FrameBuffer &GetFrameBuffer() { return *m_framebuffer; }
 
   bool IsBuffer(int bufferId) const;
   int CreateBuffer(int minBufferId) const;
@@ -55,7 +56,7 @@ private:
   int m_bound_program = 0;
   std::map<int, Buffer> m_vertexBuffers; // VAO array
   std::map<int, Program> m_programs;
-  FrameBuffer m_framebuffer;
+  FrameBuffer *m_framebuffer;
 
   PrimitiveBuffer m_primitives;
   std::vector<glm::vec4> m_geometryBuffer;

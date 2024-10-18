@@ -4,6 +4,7 @@
 #include "graphics/Context.hpp"
 #include "graphics/primitives/PrimitiveAssemblers.hpp"
 #include "graphics/primitives/PrimitiveProcessors.hpp"
+#include "graphics/primitives/PrimitiveRenderers.hpp"
 
 #include "Dialogs.hpp"
 
@@ -15,6 +16,11 @@ namespace gl
   void Viewport(float x, float y, float width, float height)
   {
     return Context::Instance()->SetViewport(x, y, width, height);
+  }
+
+  void Clear()
+  {
+    Context::Instance()->GetFrameBuffer().Clear();
   }
 
   void CreateBuffers(size_t size, int *buffers)
@@ -133,7 +139,7 @@ namespace gl
       ///TODO: implement geometry shader ?
 
       // clip the vertices
-      PrimitiveProcessor::ProcessPrimitive(mode, context.GetPrimitiveBuffer(), indicesCount, indices);
+      PrimitiveProcessor::ProcessPrimitives(mode, context.GetPrimitiveBuffer());
 
       // convert from clip space to normalized device coordinates and then to screen space
       const glm::vec4 viewport = context.GetViewport();
@@ -146,7 +152,7 @@ namespace gl
         [&context, &viewport](glm::vec4 &pos) {
           // perspective division
           const float inv_w = 1.0f / pos.w;
-          pos /= pos.w;
+          pos *= inv_w;
           pos.w = inv_w;
 
           // viewport transform
@@ -158,76 +164,7 @@ namespace gl
     // draw the primitives
     {
       /// TODO: implement the rasterizer step
-    }
-
-
-
-    // Debug rendered primitives
-    {
-      PrimitiveBuffer &primitives = context.GetPrimitiveBuffer();
-
-      LOG_TRACE("[DEBUG] Final primitives:");
-      unsigned i = 0;
-      for (const IPrimitive &prim : primitives)
-      {
-        switch (prim.vertexCount)
-        {
-        case 1:
-        {
-          const Point &point = static_cast<const Point &>(prim);
-          const glm::vec4 &pos = geometryBuffer[point.indices[0]];
-
-          LOG_TRACE("  Point[{0}] = {{ {1:5.2}, {2:5.2}, {3:5.2}, {4:5.2} }}", i, pos.x, pos.y, pos.z, pos.w);
-
-          context.GetFrameBuffer().SetPixel((size_t)pos.x, (size_t)pos.y, 0xffffffff);
-
-          break;
-        }
-        case 2:
-        {
-          const Line &line = static_cast<const Line &>(prim);
-          const glm::vec4 &p1 = geometryBuffer[line.indices[0]];
-          const glm::vec4 &p2 = geometryBuffer[line.indices[1]];
-
-          LOG_TRACE("  Point[{0}] = [\n"
-            "    {{ {1:5.2}, {2:5.2}, {3:5.2}, {4:5.2} }}"
-            "    {{ {5:5.2}, {6:5.2}, {7:5.2}, {8:5.2} }}"
-            "  ]",
-            i,
-            p1.x, p1.y, p1.z, p1.w,
-            p2.x, p2.y, p2.z, p2.w
-          );
-
-
-          break;
-        }
-        case 3:
-        {
-          const Triangle &triangle = static_cast<const Triangle &>(prim);
-          const glm::vec4 &p1 = geometryBuffer[triangle.indices[0]];
-          const glm::vec4 &p2 = geometryBuffer[triangle.indices[1]];
-          const glm::vec4 &p3 = geometryBuffer[triangle.indices[2]];
-
-          LOG_TRACE("  Point[{0}] = [\n"
-            "    {{ {1:5.2}, {2:5.2}, {3:5.2}, {4:5.2} }}"
-            "    {{ {5:5.2}, {6:5.2}, {7:5.2}, {8:5.2} }}"
-            "    {{ {9:5.2}, {10:5.2}, {11:5.2}, {12:5.2} }}"
-            "  ]",
-            i,
-            p1.x, p1.y, p1.z, p1.w,
-            p2.x, p2.y, p2.z, p2.w,
-            p3.x, p3.y, p3.z, p3.w
-          );
-          break;
-        }
-        default:
-        {
-          LOG_CRITICAL("Critical error: Unsupported primitive type encountered !");
-          dial::Critical("Unsupported primitive type !");
-        }
-        }
-        ++i;
-      }
+      PrimitiveRenderer::RenderPrimitives(context.GetPrimitiveBuffer());
     }
 
     return;
